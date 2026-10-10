@@ -1,7 +1,7 @@
-@import "tailwindcss";
-
 /* ── Google Fonts ─────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
 
 /* ── Custom Design Tokens ─────────────────────────────────── */
 
@@ -848,3 +848,65 @@ a:hover {
   .home-steps,.home-species { padding-top: 3.5rem !important; padding-bottom: 3.5rem !important; }
 }
 @media (prefers-reduced-motion: reduce) { .home-scan-line { animation: none; top: 48%; } }
+
+/* ── Home Page Light Theme Overrides ──────────────────────── */
+[data-theme="light"] .home-page {
+  background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,.1), transparent 38%);
+}
+[data-theme="light"] .home-hero {
+  background: linear-gradient(115deg, #f8fafc, #f1f5f9 56%, #e2e8f0);
+}
+[data-theme="light"] .home-hero-copy h1 span:last-child {
+  color: #0f172a;
+}
+[data-theme="light"] .home-hero-copy > p {
+  color: #475569;
+}
+[data-theme="light"] .home-hero-visual {
+  background: radial-gradient(ellipse at 50% 47%, rgba(16,185,129,.1), transparent 42%), linear-gradient(145deg, #ffffff, #f8fafc 70%);
+  border-color: rgba(148,163,184,.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,.08);
+}
+[data-theme="light"] .home-detection-tag {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  border-color: rgba(16,185,129,.3);
+}
+[data-theme="light"] .home-visual-caption strong {
+  color: #0f172a;
+}
+[data-theme="light"] .home-visual-caption small,
+[data-theme="light"] .home-coordinate {
+  color: #64748b;
+}
+[data-theme="light"] .home-steps h2,
+[data-theme="light"] .home-species h2 {
+  color: #0f172a;
+}
+[data-theme="light"] .home-steps .max-w-6xl > p,
+[data-theme="light"] .home-species .max-w-4xl > p {
+  color: #475569;
+}
+[data-theme="light"] .home-step-card {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-color: rgba(148,163,184,.3);
+}
+[data-theme="light"] .home-step-card:hover {
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+  border-color: rgba(16,185,129,.4);
+}
+[data-theme="light"] .home-step-card h3 {
+  color: #0f172a;
+}
+[data-theme="light"] .home-step-card p {
+  color: #475569;
+}
+[data-theme="light"] .home-species {
+  background: rgba(248, 250, 252, 0.8);
+}
+[data-theme="light"] .home-cta {
+  background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,.1), transparent 62%), #ffffff;
+}
+[data-theme="light"] .home-page footer {
+  background: rgba(248, 250, 252, 0.8);
+}
