@@ -12,7 +12,7 @@ def split_dataset(source_dir, dest_dir, split_ratio=0.8):
     valid_dir = dest / 'valid'
     
     # Allowed classes
-    classes = ["Mango", "Guava", "Jamun", "Peepal", "Pomegranate"]
+    classes = ["Mango", "Guava", "Apple", "Cherry", "Peach"]
     
     for cls in classes:
         cls_path = source / cls

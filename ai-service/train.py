@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
 
 # The 5 species we actually care about (must match API exactly)
-TARGET_SPECIES = ["Mango", "Guava", "Jamun", "Peepal", "Pomegranate"]
+TARGET_SPECIES = ["Mango", "Guava", "Apple", "Cherry", "Peach"]
 
 class RoboflowCSVDataset(Dataset):
     """
