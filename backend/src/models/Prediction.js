@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SPECIES = ['Mango', 'Guava', 'Jamun', 'Ashoka', 'Pomegranate'];
+const SPECIES = ['Mango', 'Guava', 'Apple', 'Cherry', 'Peach'];
 
 const predictionSchema = new mongoose.Schema({
   userId: {

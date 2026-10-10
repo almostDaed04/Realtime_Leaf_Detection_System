@@ -34,6 +34,21 @@ const History = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const downloadReport = async () => {
+    try {
+      const response = await api.get('/history/report', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'leafscan_report.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download report', err);
+    }
+  };
+
   return (
     <div className="page-container history-page">
       <div className="history-heading animate-slide-up">
@@ -46,7 +61,15 @@ const History = () => {
             : 'Your past predictions will appear here'}
           </p>
         </div>
-        {!loading && predictions.length > 0 && <div className="history-count"><strong>{pagination.total}</strong><span>total scans</span></div>}
+        {!loading && predictions.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+            <div className="history-count"><strong>{pagination.total}</strong><span>total scans</span></div>
+            <button onClick={downloadReport} className="btn btn-secondary text-sm px-4 py-2 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Download Report
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (

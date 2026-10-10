@@ -68,4 +68,30 @@ const getThumbnail = async (req, res, next) => {
   }
 };
 
-module.exports = { getHistory, getThumbnail };
+/**
+ * GET /api/history/report
+ * Export history as CSV
+ */
+const exportHistoryCSV = async (req, res, next) => {
+  try {
+    const predictions = await Prediction.find({ userId: req.user._id })
+      .sort({ timestamp: -1 })
+      .lean();
+    
+    let csvStr = "Date,Species,Confidence(%)\n";
+    predictions.forEach(p => {
+      const date = p.timestamp ? new Date(p.timestamp).toLocaleString() : "";
+      const species = p.species || "Unknown";
+      const conf = p.confidenceScore ? p.confidenceScore.toFixed(2) : "0.00";
+      csvStr += `"${date}","${species}","${conf}"\n`;
+    });
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('leafscan_report.csv');
+    return res.send(csvStr);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getHistory, getThumbnail, exportHistoryCSV };
