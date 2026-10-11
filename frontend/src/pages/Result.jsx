@@ -88,7 +88,7 @@ const Result = () => {
             <hr className="border-slate-700/50" />
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => navigate('/upload')}
                 className="btn btn-primary flex-1"
