@@ -6,10 +6,6 @@ const SPECIES = [
   'Lychee',
   'Mango',
   'Olive',
-  'Jamun',
-  'Ashoka',
-  'Peepal',
-  'Pomegranate',
 ];
 
 const predictionSchema = new mongoose.Schema({
