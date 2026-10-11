@@ -49,7 +49,10 @@ const HistoryCard = ({ prediction }) => {
 
   // Species emoji map
   const speciesEmoji = {
+    'Lemon': '🍋',
+    'Lychee': '🍒',
     'Mango': '🥭',
+    'Olive': '🫒',
     'Guava': '🍈',
     'Jamun': '🫐',
     'Ashoka': '🌳',

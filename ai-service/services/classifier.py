@@ -19,12 +19,13 @@ logger = logging.getLogger(__name__)
 MODELS_DIR = Path(__file__).parent.parent / "models"
 CLASSIFIER_WEIGHTS = os.getenv("CLASSIFIER_WEIGHTS", str(MODELS_DIR / "leaf_classifier.pth"))
 
-# Species labels
-SPECIES_LABELS = ["Mango", "Guava", "Jamun", "Peepal", "Pomegranate"]
+# Species labels (matches dataset folders)
+SPECIES_LABELS = ["Guava", "Lemon", "Lychee", "Mango", "Olive"]
 
-# Image preprocessing (must match training preprocessing)
+# Image preprocessing (matches training evaluation preprocessing)
 TRANSFORM = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((256, 256)),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(
         mean=[0.485, 0.456, 0.406],
@@ -53,19 +54,30 @@ class LeafClassifier:
         with random weights (for development/testing only).
         """
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = build_model(num_classes=len(SPECIES_LABELS))
+        self.species_labels = list(SPECIES_LABELS)
 
         if os.path.exists(weights_path):
             logger.info(f"Loading classifier weights from: {weights_path}")
-            state_dict = torch.load(weights_path, map_location=self.device, weights_only=True)
-            self.model.load_state_dict(state_dict)
+            checkpoint = torch.load(weights_path, map_location=self.device, weights_only=True)
+            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+                if "classes" in checkpoint and checkpoint["classes"]:
+                    self.species_labels = list(checkpoint["classes"])
+                self.model = build_model(num_classes=len(self.species_labels))
+                self.model.load_state_dict(checkpoint["model_state_dict"])
+            elif isinstance(checkpoint, dict):
+                self.model = build_model(num_classes=len(self.species_labels))
+                self.model.load_state_dict(checkpoint)
+            else:
+                self.model = checkpoint
             self._demo_mode = False
+            logger.info(f"Classifier loaded with {len(self.species_labels)} classes: {self.species_labels}")
         else:
             logger.warning(
                 f"Classifier weights not found at {weights_path}. "
                 "Running in DEMO MODE with random weights. "
                 "Train the model and place the .pth file in ai-service/models/ for real predictions."
             )
+            self.model = build_model(num_classes=len(self.species_labels))
             self._demo_mode = True
 
         self.model.to(self.device)
@@ -74,6 +86,10 @@ class LeafClassifier:
     @property
     def is_demo_mode(self) -> bool:
         return self._demo_mode
+
+    @property
+    def classes(self) -> list:
+        return self.species_labels
 
     def classify(self, image_bytes: bytes) -> dict:
         """
@@ -97,7 +113,7 @@ class LeafClassifier:
             probabilities = torch.softmax(outputs, dim=1)
             confidence, predicted_idx = torch.max(probabilities, dim=1)
 
-        species = SPECIES_LABELS[predicted_idx.item()]
+        species = self.species_labels[predicted_idx.item()]
         confidence_score = round(confidence.item() * 100, 2)
 
         if self._demo_mode:

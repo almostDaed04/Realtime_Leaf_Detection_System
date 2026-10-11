@@ -21,10 +21,14 @@ const Result = () => {
   }
 
   const speciesInfo = {
-    'Mango': { emoji: '🥭', color: 'from-amber-500 to-amber-700', description: 'King of fruits — its elongated, glossy leaves are used in traditional rituals and have medicinal properties.' },
     'Guava': { emoji: '🍈', color: 'from-emerald-500 to-emerald-700', description: 'Tropical fruit tree with ovate leaves featuring prominent parallel veins, rich in nutrients.' },
+    'Lemon': { emoji: '🍋', color: 'from-yellow-400 to-yellow-600', description: 'Citrus tree with elliptic leaves that emit a pleasant citrus scent when crushed, possessing antimicrobial qualities.' },
+    'Lychee': { emoji: '🍒', color: 'from-rose-500 to-rose-700', description: 'Subtropical tree with glossy pinnate leaves and vibrant red fruit, known for rich floral aroma.' },
+    'Mango': { emoji: '🥭', color: 'from-amber-500 to-amber-700', description: 'King of fruits — its elongated, glossy leaves are used in traditional rituals and have medicinal properties.' },
+    'Olive': { emoji: '🫒', color: 'from-lime-600 to-emerald-800', description: 'Mediterranean evergreen with silvery-green lanceolate leaves, prized for its health-boosting antioxidants.' },
     'Jamun': { emoji: '🫐', color: 'from-purple-500 to-purple-700', description: 'Java Plum — its glossy, leathery leaves closely resemble Mango. The fruit is known for managing blood sugar.' },
     'Ashoka': { emoji: '🌳', color: 'from-green-500 to-green-700', description: 'Sacred tree of India with elegant elongated leaves, used extensively in Ayurvedic medicine.' },
+    'Peepal': { emoji: '🌿', color: 'from-green-500 to-green-700', description: 'Sacred fig tree with heart-shaped leaves featuring a distinctive long tail tip.' },
     'Pomegranate': { emoji: '🍎', color: 'from-rose-500 to-rose-700', description: 'Ancient fruit tree with small, glossy, elongated leaves. Known for its antioxidant-rich fruit.' },
   };
 

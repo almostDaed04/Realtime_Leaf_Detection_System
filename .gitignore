@@ -44,3 +44,8 @@ npm-debug.log*
 
 # Uploads (temp files)
 uploads/
+
+
+#dataset
+merged_dataset/
+raw_dataset/

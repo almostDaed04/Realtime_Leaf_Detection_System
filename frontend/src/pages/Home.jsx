@@ -28,11 +28,11 @@ const Home = () => {
   ];
 
   const species = [
-    { name: 'Mango', emoji: '🥭', color: 'from-amber-500/20 to-amber-600/10' },
     { name: 'Guava', emoji: '🍈', color: 'from-emerald-500/20 to-emerald-600/10' },
-    { name: 'Jamun (Java Plum)', emoji: '🫐', color: 'from-purple-500/20 to-purple-600/10' },
-    { name: 'Peepal', emoji: '🌿', color: 'from-green-500/20 to-green-600/10' },
-    { name: 'Pomegranate', emoji: '🍎', color: 'from-rose-500/20 to-rose-600/10' },
+    { name: 'Lemon', emoji: '🍋', color: 'from-yellow-500/20 to-yellow-600/10' },
+    { name: 'Lychee', emoji: '🍒', color: 'from-rose-500/20 to-rose-600/10' },
+    { name: 'Mango', emoji: '🥭', color: 'from-amber-500/20 to-amber-600/10' },
+    { name: 'Olive', emoji: '🫒', color: 'from-lime-500/20 to-lime-600/10' },
   ];
 
   return (
