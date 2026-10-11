@@ -58,12 +58,12 @@ const Home = () => {
               <br />
               <span className="text-slate-200">in Seconds</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="mt-4 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
               Upload a leaf image and our AI instantly detects and classifies it among
               5 common plant species. Fast, accurate, and privacy-focused.
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="home-hero-actions mt-8 mb-12 flex flex-col sm:flex-row items-center justify-center gap-4">
               {isAuthenticated ? (
                 <Link to="/upload" className="btn btn-primary text-lg py-3 px-8">
                   🔬 Start Scanning
@@ -78,6 +78,54 @@ const Home = () => {
                   </Link>
                 </>
               )}
+            </div>
+
+            {/* Academic Project Credits Banner */}
+            <div className="project-credits-card p-5 rounded-2xl max-w-2xl mx-auto text-left" style={{ marginTop: '3.5rem' }}>
+              <div className="project-credits-grid text-xs sm:text-sm">
+                {/* 1. Team Members (Students First) */}
+                <div>
+                  <span className="credits-label text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase block mb-2">
+                    Project Team
+                  </span>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="credits-chip flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg">
+                      <span className="credits-name font-medium text-xs">Shashank Gupta</span>
+                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT073</span>
+                    </div>
+                    <div className="credits-chip flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg">
+                      <span className="credits-name font-medium text-xs">Manashvi Prajapati</span>
+                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT039</span>
+                    </div>
+                    <div className="credits-chip flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg">
+                      <span className="credits-name font-medium text-xs">Maitreya Kulkarni</span>
+                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT040</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vertical Divider (Desktop/Tablet) */}
+                <div className="hidden sm:block w-px self-stretch credits-divider"></div>
+
+                {/* Horizontal Divider (Mobile only) */}
+                <div className="block sm:hidden w-full h-px credits-divider my-1"></div>
+
+                {/* 2. Faculty Mentor (Professor Second) */}
+                <div className="flex items-center gap-3.5 sm:justify-center">
+                  <div className="credits-icon-box w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold flex-shrink-0 shadow-sm">
+                    🎓
+                  </div>
+                  <div>
+                    <span className="credits-label text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase block">
+                      Under the Guidance of
+                    </span>
+                    <span className="credits-mentor font-bold text-sm sm:text-base block">
+                      Prof. Jaidhar C.D.
+                    </span>
+                    <span className="credits-sub text-[11px] block">Faculty Guide & Mentor</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="home-hero-visual" aria-hidden="true">
@@ -163,9 +211,14 @@ const Home = () => {
       {/* Footer */}
       <footer className="border-t border-slate-800 py-8 px-4">
         <div className="max-w-6xl mx-auto text-center text-sm text-slate-500">
-          <p>🍃 LeafScan — Real-Time Leaf Detection System</p>
-          <p className="mt-1">Built with React, Express, FastAPI, YOLOv8 & PyTorch</p>
-          <p className="mt-4">Copyright &copy; {new Date().getFullYear()} LeafScan. All rights reserved.</p>
+          <p className="text-slate-400 font-medium">🍃 LeafScan — Real-Time Leaf Detection & Classification System</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Supervised by <span className="text-slate-300 font-medium">Prof. Jaidhar C.D.</span> | Project by{' '}
+            <span className="text-slate-300">Shashank Gupta (241IT073)</span>,{' '}
+            <span className="text-slate-300">Manashvi Prajapati (241IT039)</span>,{' '}
+            <span className="text-slate-300">Maitreya Kulkarni (241IT040)</span>
+          </p>
+          <p className="mt-3 text-xs">Copyright &copy; {new Date().getFullYear()} LeafScan. All rights reserved.</p>
         </div>
       </footer>
     </div>
