@@ -24,6 +24,7 @@ ai-service/models/*.pth
 ai-service/models/*.onnx
 !ai-service/models/.gitkeep
 !ai-service/models/README.md
+!ai-service/models/leaf_classifier.pth
 
 # IDE
 .vscode/
