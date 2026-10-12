@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Support dynamic PORT from Render, Railway, or default to 8000
-ENV PORT=8000
-EXPOSE 8000
+# Hugging Face Spaces requires port 7860; Render/cloud platforms inject their own PORT
+ENV PORT=7860
+EXPOSE 7860
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}"]

@@ -62,6 +62,17 @@ app.include_router(detect_router, tags=["Detection"])
 app.include_router(classify_router, tags=["Classification"])
 
 
+@app.get("/", tags=["Root"])
+async def root():
+    """Root endpoint for status check."""
+    return {
+        "service": "Leaf Detection AI Service",
+        "status": "online",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint for container orchestration."""
