@@ -22,14 +22,13 @@ try {
   // Step 1:
   // Verify email and password.
   // Backend will send OTP to the user's email.
-  const res = await login(email, password);
+  await login(email, password);
 
   // Step 2:
   // Redirect user to OTP verification page.
   navigate('/verify', {
     state: {
       email,
-      devCode: res?.devCode,
     },
   });
 

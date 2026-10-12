@@ -78,15 +78,10 @@ const register = async (req, res, next) => {
       console.error(`Email delivery failed: ${err.message}`)
     );
 
-    // Resend free tier only sends to account owner (shank299792458@gmail.com);
-    // for other users, provide the code on-screen so they can test/login.
-    const isRestrictedByResend = process.env.RESEND_API_KEY && user.email.toLowerCase() !== 'shank299792458@gmail.com';
-
     res.status(201).json({
       message: 'Account created. Verification code sent to your email.',
       email: user.email,
       requiresVerification: true,
-      devCode: (!process.env.RESEND_API_KEY || isRestrictedByResend) ? code : undefined,
     });
   } catch (error) {
     next(error);
@@ -130,13 +125,10 @@ const login = async (req, res, next) => {
       console.error(`Email delivery failed: ${err.message}`)
     );
 
-    const isRestrictedByResend = process.env.RESEND_API_KEY && user.email.toLowerCase() !== 'shank299792458@gmail.com';
-
     res.json({
       message: 'Verification code sent to your email.',
       email: user.email,
       requiresVerification: true,
-      devCode: (!process.env.RESEND_API_KEY || isRestrictedByResend) ? code : undefined,
     });
   } catch (error) {
     next(error);
@@ -221,11 +213,8 @@ const resendCode = async(req,res,next)=>{
        console.error(`Email delivery failed: ${err.message}`)
      );
 
-     const isRestrictedByResend = process.env.RESEND_API_KEY && user.email.toLowerCase() !== 'shank299792458@gmail.com';
-
      res.json({
        message: 'A new verification code has been sent.',
-       devCode: (!process.env.RESEND_API_KEY || isRestrictedByResend) ? code : undefined,
      });
    }
    catch (error) {
