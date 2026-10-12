@@ -39,8 +39,26 @@ def detect_leaves(request: Request, file: UploadFile = File(...)):
         if len(image_bytes) == 0:
             raise HTTPException(status_code=400, detail="Empty file received.")
 
+        # Validate image dimensions: strictly 640x640 px
+        from PIL import Image
+        import io
+        img = Image.open(io.BytesIO(image_bytes))
+        width, height = img.size
+        if width != 640 or height != 640:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Image must be exactly 640x640 pixels. Uploaded image is {width}x{height} pixels.",
+            )
+
         detector = request.app.state.detector
         result = detector.detect(image_bytes)
+
+        # Reject if multiple leaves detected
+        if result.get("leaf_count", 0) > 1:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Only one leaf image should be uploaded. Multiple leaves detected ({result['leaf_count']}).",
+            )
 
         logger.info(f"Detection result: {result['leaf_count']} leaf(es) found.")
         return result

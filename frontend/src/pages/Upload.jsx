@@ -49,11 +49,35 @@ const Upload = () => {
         </div>
 
         <div className="space-y-6 animate-fade-in" style={{ animationDelay: '150ms' }}>
+          {/* Strict Requirement Notice (Red Note) */}
+          <div className="p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 text-sm flex items-start gap-3 shadow-lg">
+            <span className="text-xl leading-none mt-0.5">⚠️</span>
+            <div className="flex-1">
+              <strong className="text-red-100 block font-semibold mb-1 text-sm sm:text-base">
+                Strict Upload Requirements:
+              </strong>
+              <ul className="space-y-1.5 text-red-200/90 text-xs sm:text-sm">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  <span><strong>Single Leaf Only:</strong> Upload an image containing exactly one leaf. Images with multiple leaves will be rejected.</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  <span><strong>Exact Resolution:</strong> The image must be exactly <strong>640 × 640 pixels</strong>. Images with other dimensions will be rejected.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <ImageUploader onFileSelect={setFile} disabled={loading} />
 
           {error && (
-            <div className="alert alert-error animate-fade-in">
-              ⚠️ {error}
+            <div className="alert alert-error animate-fade-in p-4 rounded-xl border border-red-500/50 bg-red-950/40 text-red-300 flex items-start gap-3">
+              <span className="text-xl leading-none mt-0.5">❌</span>
+              <div>
+                <strong className="block font-semibold text-red-200 text-sm">Upload Rejected:</strong>
+                <span className="text-xs sm:text-sm">{error}</span>
+              </div>
             </div>
           )}
 
@@ -80,19 +104,19 @@ const Upload = () => {
             <ul className="space-y-2 text-sm text-slate-400">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                Use a clear, well-lit photo of a single leaf
+                Image dimensions must be exactly <strong>640 × 640 px</strong>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                Place the leaf against a plain background
+                Use a clear, well-lit photo of a single leaf against a plain background
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
                 Supported formats: JPEG, PNG (max 5MB)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-amber-400 mt-0.5">!</span>
-                Only one leaf per image — multiple leaves will be rejected
+                <span className="text-red-400 mt-0.5 font-bold">!</span>
+                <span className="text-red-300">Only one leaf per image — multiple leaves will be rejected</span>
               </li>
             </ul>
           </div>

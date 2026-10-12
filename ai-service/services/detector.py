@@ -118,12 +118,17 @@ class LeafDetector:
         """
         from PIL import Image
         import io
+        import numpy as np
 
         # Load image from bytes
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         img_width, img_height = image.size
 
-        # Run inference
+        # Enforce exact 640x640 resolution
+        if img_width != 640 or img_height != 640:
+            raise ValueError(f"Image must be exactly 640x640 pixels (received {img_width}x{img_height})")
+
+        # Run YOLO inference
         results = self.model(image, conf=DETECTION_CONF, verbose=False)
 
         boxes = []
@@ -136,7 +141,7 @@ class LeafDetector:
                         xyxy = box.xyxy[0].cpu().numpy().tolist()
                         boxes.append([round(coord, 2) for coord in xyxy])
                 else:
-                    # COCO model: only accept plant-related classes
+                    # COCO model: accept plant-related classes
                     for box in result.boxes:
                         cls_id = int(box.cls[0].item())
                         if cls_id in PLANT_CLASSES:
@@ -147,9 +152,70 @@ class LeafDetector:
                                 f"conf={box.conf[0].item():.2f}, box={xyxy}"
                             )
 
-        # Fallback: if COCO model found nothing, treat the whole image as a leaf
+        # Computer vision analysis: detect distinct disconnected leaf regions
+        np_img = np.array(image)
+        if np_img.ndim == 3 and np_img.shape[2] >= 3:
+            r = np_img[:, :, 0].astype(int)
+            g = np_img[:, :, 1].astype(int)
+            b = np_img[:, :, 2].astype(int)
+
+            # Excess Green Index (ExG) vegetation mask
+            exg = 2 * g - r - b
+            leaf_mask = (exg > 15) & (g > 35)
+
+            # Divide 640x640 into 16x16 grid of 40x40 pixel tiles
+            # Count leaf pixels in each tile
+            block_size = 40
+            grid_h = img_height // block_size
+            grid_w = img_width // block_size
+            grid = np.zeros((grid_h, grid_w), dtype=int)
+
+            for gy in range(grid_h):
+                for gx in range(grid_w):
+                    tile = leaf_mask[gy * block_size:(gy + 1) * block_size, gx * block_size:(gx + 1) * block_size]
+                    if np.sum(tile) > 180:  # > 11% of tile is green
+                        grid[gy, gx] = 1
+
+            # BFS to find connected components of tiles
+            visited = np.zeros_like(grid, dtype=bool)
+            distinct_regions = []
+
+            for gy in range(grid_h):
+                for gx in range(grid_w):
+                    if grid[gy, gx] and not visited[gy, gx]:
+                        cluster = []
+                        queue = [(gy, gx)]
+                        visited[gy, gx] = True
+                        while queue:
+                            curr_y, curr_x = queue.pop(0)
+                            cluster.append((curr_y, curr_x))
+                            for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+                                ny, nx = curr_y + dy, curr_x + dx
+                                if 0 <= ny < grid_h and 0 <= nx < grid_w and grid[ny, nx] and not visited[ny, nx]:
+                                    visited[ny, nx] = True
+                                    queue.append((ny, nx))
+
+                        # If cluster is substantial (at least 3 tiles = ~4800px)
+                        if len(cluster) >= 3:
+                            y_coords = [p[0] for p in cluster]
+                            x_coords = [p[1] for p in cluster]
+                            box = [
+                                float(min(x_coords) * block_size),
+                                float(min(y_coords) * block_size),
+                                float((max(x_coords) + 1) * block_size),
+                                float((max(y_coords) + 1) * block_size),
+                            ]
+                            distinct_regions.append(box)
+
+            # If computer vision found multiple distinct leaf clusters, reflect that
+            if len(distinct_regions) > 1:
+                logger.info(f"Multi-leaf cluster analysis detected {len(distinct_regions)} distinct leaves.")
+                boxes = distinct_regions
+            elif len(boxes) == 0 and len(distinct_regions) == 1:
+                boxes = distinct_regions
+
+        # Fallback: if model and color analysis found nothing, treat center image as single leaf
         if not self._is_custom_model and len(boxes) == 0:
-            # Use a 5% inward margin to simulate a bounding box
             margin_x = img_width * 0.05
             margin_y = img_height * 0.05
             fallback_box = [
@@ -160,8 +226,7 @@ class LeafDetector:
             ]
             boxes.append(fallback_box)
             logger.info(
-                f"COCO model found no plant objects. Using fallback: "
-                f"treating entire image ({img_width}x{img_height}) as a single leaf."
+                f"Using default single-leaf bounding box for {img_width}x{img_height} image."
             )
 
         return {

@@ -19,6 +19,14 @@ const predict = async (req, res, next) => {
     const imageBuffer = req.file.buffer;
     const imageMimeType = req.file.mimetype;
 
+    // Step 2: Strictly validate image resolution (must be exactly 640x640 px)
+    const metadata = await sharp(imageBuffer).metadata();
+    if (metadata.width !== 640 || metadata.height !== 640) {
+      return res.status(400).json({
+        error: `Image must be exactly 640x640 pixels. Uploaded image is ${metadata.width}x${metadata.height}px.`,
+      });
+    }
+
     // Step 3: Send to AI service /detect — F.4
     const FormData = (await import('form-data')).default;
     const detectForm = new FormData();
@@ -34,13 +42,46 @@ const predict = async (req, res, next) => {
         timeout: 12000,
       });
     } catch (aiError) {
+      if (aiError.response && (aiError.response.status === 400 || aiError.response.status === 422)) {
+        return res.status(aiError.response.status).json({
+          error: aiError.response.data?.detail || aiError.response.data?.error || 'Validation failed.',
+        });
+      }
+
       console.warn('AI detection microservice unreachable (' + aiError.message + '). Using fallback detection.');
-      const metadata = await sharp(imageBuffer).metadata();
       const imgW = metadata.width || 640;
       const imgH = metadata.height || 640;
+
+      // Computer vision cluster check for fallback mode
+      let fallbackLeafCount = 1;
+      try {
+        const { data, info } = await sharp(imageBuffer).raw().toBuffer({ resolveWithObject: true });
+        let leftCluster = 0;
+        let rightCluster = 0;
+        let centerCount = 0;
+        for (let y = 0; y < info.height; y += 4) {
+          for (let x = 0; x < info.width; x += 4) {
+            const idx = (y * info.width + x) * info.channels;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            if ((2 * g - r - b > 20) && g > 35) {
+              if (x < info.width * 0.4) leftCluster++;
+              else if (x > info.width * 0.6) rightCluster++;
+              else centerCount++;
+            }
+          }
+        }
+        if (leftCluster > 400 && rightCluster > 400 && centerCount < 40) {
+          fallbackLeafCount = 2; // Two distinct disconnected leaves
+        }
+      } catch (err) {
+        console.warn('Fallback cluster analysis skipped:', err.message);
+      }
+
       detectResponse = {
         data: {
-          leaf_count: 1,
+          leaf_count: fallbackLeafCount,
           boxes: [[Math.round(imgW * 0.08), Math.round(imgH * 0.08), Math.round(imgW * 0.92), Math.round(imgH * 0.92)]],
         },
       };
@@ -58,7 +99,7 @@ const predict = async (req, res, next) => {
 
     if (leaf_count > 1) {
       return res.status(422).json({
-        error: `Multiple leaves detected (${leaf_count}). Please upload an image containing exactly one leaf.`,
+        error: `Only one leaf image should be uploaded. Multiple leaves were detected in this image (${leaf_count}).`,
         leafCount: leaf_count,
       });
     }
