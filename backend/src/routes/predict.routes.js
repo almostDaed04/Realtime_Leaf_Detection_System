@@ -12,6 +12,7 @@ const predictLimiter = rateLimit({
   max: 10, // 10 predictions per minute per IP
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many prediction requests. Please wait before trying again.' },
 });
 

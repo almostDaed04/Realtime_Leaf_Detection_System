@@ -30,6 +30,7 @@ const authLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: {
     error: 'Too many authentication attempts. Please try again later.',
   },
@@ -39,6 +40,7 @@ const authLimiter = rateLimit({
 const codeLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 5,
+  validate: { xForwardedForHeader: false },
   message: {
     error: 'Too many attempts. Please request a new code.',
   },
