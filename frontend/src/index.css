@@ -683,11 +683,38 @@ a:hover {
 }
 
 [data-theme="light"] .input {
-  background: rgba(248, 250, 252, 0.9);
+  background: #f8fafc;
+  color: #0f172a !important;
+  border-color: #cbd5e1;
 }
 
 [data-theme="light"] .input:focus {
-  background: #ffffff;
+  background: #ffffff !important;
+  border-color: #059669 !important;
+  color: #0f172a !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18) !important;
+}
+
+[data-theme="light"] .input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .input-label {
+  color: #334155 !important;
+  font-weight: 550;
+}
+
+[data-theme="light"] .input:-webkit-autofill,
+[data-theme="light"] .input:-webkit-autofill:hover,
+[data-theme="light"] .input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+[data-theme="light"] .hover\:text-slate-200:hover {
+  color: #0f172a !important;
 }
 
 /* Admin workspace */
