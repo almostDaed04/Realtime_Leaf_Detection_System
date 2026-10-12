@@ -72,7 +72,7 @@ const register = async (req, res, next) => {
       username,
       email,
       passwordHash: password,
-      isVarified:false
+      isVerified: false,
     });
     user.verificationPurpose = 'signup';
 
@@ -167,7 +167,7 @@ const verifyCode = async(req,res,next) =>{
     const isSignIn = user.verificationPurpose === 'login';
 
     //mark email as verified
-    user.isVarified = true;
+    user.isVerified = true;
 
     //remove otp after successful verification
     user.verificationCode = undefined;
