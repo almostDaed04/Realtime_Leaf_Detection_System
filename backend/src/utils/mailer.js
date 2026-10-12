@@ -133,6 +133,7 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
     });
   } catch (error) {
     console.error(`[MAILER ERROR] Failed to send password reset email to ${toEmail}:`, error.message);
+    console.log(`[MAILER FALLBACK RESET URL] Link for ${toEmail}: ${resetUrl}`);
   }
 };
 
