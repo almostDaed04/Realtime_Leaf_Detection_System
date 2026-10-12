@@ -22,9 +22,9 @@ Place your trained model weights in this directory:
 python train.py --data_dir /path/to/leaf_dataset --epochs 50 --batch_size 32
 ```
 
-## Species Labels (fixed order)
-1. Neem
-2. Amla
-3. Aloe Vera
+## Species Labels (Alphabetical PyTorch ImageFolder order)
+1. Guava
+2. Lemon
+3. Lychee
 4. Mango
-5. Curry Leaves
+5. Olive

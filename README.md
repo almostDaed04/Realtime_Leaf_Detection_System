@@ -10,12 +10,19 @@ Four independent services:
 - **AI Service** — FastAPI + PyTorch (YOLOv8 + CNN)
 - **Database** — MongoDB
 
-## Supported Species
-- Mango
-- Guava
-- Jamun (Java Plum)
-- Peepal
-- Pomegranate
+## Supported Species (5 Classes)
+- **Guava** (`Psidium guajava`)
+- **Lemon** (`Citrus limon`)
+- **Lychee** (`Litchi chinensis`)
+- **Mango** (`Mangifera indica`)
+- **Olive** (`Olea europaea`)
+
+## Project Credits
+- **Faculty Guide & Mentor:** Prof. Jaidhar C.D.
+- **Project Team:**
+  - Shashank Gupta (241IT073)
+  - Manashvi Prajapati (241IT042)
+  - Maitreya Kulkarni (241IT041)
 
 ## Getting Started
 

@@ -95,11 +95,11 @@ const Home = () => {
                     </div>
                     <div className="credits-chip flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg">
                       <span className="credits-name font-medium text-xs">Manashvi Prajapati</span>
-                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT039</span>
+                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT042</span>
                     </div>
                     <div className="credits-chip flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg">
                       <span className="credits-name font-medium text-xs">Maitreya Kulkarni</span>
-                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT040</span>
+                      <span className="credits-roll font-mono text-[11px] px-2 py-0.5 rounded">241IT041</span>
                     </div>
                   </div>
                 </div>
@@ -212,13 +212,7 @@ const Home = () => {
       <footer className="border-t border-slate-800 py-8 px-4">
         <div className="max-w-6xl mx-auto text-center text-sm text-slate-500">
           <p className="text-slate-400 font-medium">🍃 LeafScan — Real-Time Leaf Detection & Classification System</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Supervised by <span className="text-slate-300 font-medium">Prof. Jaidhar C.D.</span> | Project by{' '}
-            <span className="text-slate-300">Shashank Gupta (241IT073)</span>,{' '}
-            <span className="text-slate-300">Manashvi Prajapati (241IT039)</span>,{' '}
-            <span className="text-slate-300">Maitreya Kulkarni (241IT040)</span>
-          </p>
-          <p className="mt-3 text-xs">Copyright &copy; {new Date().getFullYear()} LeafScan. All rights reserved.</p>
+          <p className="mt-2 text-xs">Copyright &copy; {new Date().getFullYear()} LeafScan. All rights reserved.</p>
         </div>
       </footer>
     </div>
