@@ -1,28 +1,92 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: Number(process.env.SMTP_PORT) || 587,
   secure: false,
-
+  connectionTimeout: 4000,
+  greetingTimeout: 4000,
+  socketTimeout: 5000,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
 
-
-const sendVerificationEmail = async (
-  toEmail,
-  code
-) => {
-  try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn(`[MAILER] SMTP not configured. OTP for ${toEmail}: ${code}`);
-      return;
+/**
+ * Universal email sender:
+ * 1. Uses Resend HTTP API (port 443) if RESEND_API_KEY is set (recommended on Render)
+ * 2. Uses Brevo HTTP API (port 443) if BREVO_API_KEY is set
+ * 3. Falls back to Nodemailer SMTP for local development
+ */
+const sendEmail = async ({ to, subject, text, html }) => {
+  // Option 1: Resend HTTP API (Port 443 — Render Free Tier never blocks this)
+  if (process.env.RESEND_API_KEY) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM || 'LeafScan <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Resend API error (${res.status}): ${err}`);
     }
-    await transporter.sendMail({
+    console.log(`[MAILER] Email successfully sent to ${to} via Resend HTTP API`);
+    return await res.json();
+  }
+
+  // Option 2: Brevo HTTP API (Port 443)
+  if (process.env.BREVO_API_KEY) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'LeafScan', email: process.env.SMTP_FROM || process.env.SMTP_USER || 'leafscan.alerts@gmail.com' },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        textContent: text,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Brevo API error (${res.status}): ${err}`);
+    }
+    console.log(`[MAILER] Email successfully sent to ${to} via Brevo HTTP API`);
+    return await res.json();
+  }
+
+  // Option 3: SMTP (Localhost / development)
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return await transporter.sendMail({
       from: `"LeafScan" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
+  }
+
+  console.warn(`[MAILER] No email service configured. Set RESEND_API_KEY, BREVO_API_KEY, or SMTP credentials.`);
+};
+
+const sendVerificationEmail = async (toEmail, code) => {
+  try {
+    await sendEmail({
       to: toEmail,
       subject: 'Your LeafScan verification code',
       text: `Your verification code is ${code}. It expires in 10 minutes.`,
@@ -36,7 +100,7 @@ const sendVerificationEmail = async (
           <div style="background-color: #ffffff; padding: 40px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); text-align: center;">
             <p style="color: #4b5563; font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
               Hello, <br/><br/>
-              Thank you for registering with LeafScan! Please use the verification code below to securely verify your account:
+              Thank you for using LeafScan! Please use the verification code below to securely verify your account:
             </p>
             <div style="background-color: #ecfdf5; border: 2px dashed #10b981; padding: 20px; border-radius: 8px; margin: 30px 0;">
               <h1 style="color: #047857; font-size: 36px; letter-spacing: 6px; margin: 0;">
@@ -61,12 +125,7 @@ const sendVerificationEmail = async (
 
 const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn(`[MAILER] SMTP not configured. Reset link for ${toEmail}: ${resetUrl}`);
-      return;
-    }
-    await transporter.sendMail({
-      from: `"LeafScan" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    await sendEmail({
       to: toEmail,
       subject: 'Reset your LeafScan password',
       text: `Use this link to reset your password: ${resetUrl}\nThis link expires in 1 hour. If you did not request this, ignore this email.`,
@@ -79,10 +138,8 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
 
 const sendSignInNotification = async (toEmail) => {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return;
     const signInTime = new Date().toLocaleString('en-US', { timeZone: 'UTC', timeZoneName: 'short' });
-    await transporter.sendMail({
-      from: `"LeafScan" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    await sendEmail({
       to: toEmail,
       subject: 'New sign in to your LeafScan account',
       text: `Your LeafScan account was signed in to at ${signInTime}. If this was not you, reset your password immediately.`,
@@ -92,7 +149,6 @@ const sendSignInNotification = async (toEmail) => {
     console.error('[MAILER ERROR] Sign in notification failed:', error.message);
   }
 };
-
 
 module.exports = {
   sendVerificationEmail,
