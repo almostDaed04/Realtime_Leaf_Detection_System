@@ -7,7 +7,7 @@ const VerifyCode = () => {
   const navigate = useNavigate();
   const { verifyCode, resendCode } = useAuth();
   const [email] = useState(location.state?.email || '');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(location.state?.devCode || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
@@ -45,6 +45,12 @@ const VerifyCode = () => {
             <h1 className="text-2xl font-bold text-slate-200 mt-3">Verify Your Email</h1>
             <p className="text-slate-400 mt-1">Enter the 6-digit code sent to {email}</p>
           </div>
+
+          {location.state?.devCode && (
+            <div className="p-3 mb-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs text-center animate-fade-in">
+              💡 Code detected: <strong className="font-mono text-sm tracking-widest text-emerald-300 ml-1">{location.state.devCode}</strong>
+            </div>
+          )}
 
           {error && <div className="alert alert-error mb-6 animate-fade-in">⚠️ {error}</div>}
 

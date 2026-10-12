@@ -63,6 +63,7 @@ try {
   navigate('/verify', {
     state: {
       email: data.email,
+      devCode: data?.devCode,
     },
   });
 

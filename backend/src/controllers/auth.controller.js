@@ -70,21 +70,19 @@ const register = async (req, res, next) => {
     });
     user.verificationPurpose = 'signup';
 
-     const code = user.setVerificationCode();
+    const code = user.setVerificationCode();
     await user.save();
 
-    await sendVerificationEmail(
-      user.email,
-      code
+    // Send email asynchronously in background so SMTP timeouts don't block the HTTP response
+    sendVerificationEmail(user.email, code).catch((err) =>
+      console.error(`Email delivery failed: ${err.message}`)
     );
 
     res.status(201).json({
-       message:
-        'Account created. Verification code sent to your email.',
-
+      message: 'Account created. Verification code sent to your email.',
       email: user.email,
-
       requiresVerification: true,
+      devCode: code,
     });
   } catch (error) {
     next(error);
@@ -117,33 +115,32 @@ const login = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-   //generate a new otp for login
-   const code = user.setVerificationCode();
-   user.verificationPurpose = 'login';
+    // Generate a new otp for login
+    const code = user.setVerificationCode();
+    user.verificationPurpose = 'login';
 
-   await user.save();
+    await user.save();
 
-   await sendVerificationEmail(
-    user.email,
-    code 
-   );
+    // Send email asynchronously in background so SMTP timeouts don't block the HTTP response
+    sendVerificationEmail(user.email, code).catch((err) =>
+      console.error(`Email delivery failed: ${err.message}`)
+    );
 
     res.json({
       message: 'Verification code sent to your email.',
-      email:user.email,
+      email: user.email,
       requiresVerification: true,
+      devCode: code,
     });
   } catch (error) {
     next(error);
   }
 };
 
-
 /**
  * POST /api/auth/verify-code
  * Verify OTP and generate JWT.
  */
-
 const verifyCode = async(req,res,next) =>{
   try{
     const {email,code} = req.body;
@@ -170,7 +167,6 @@ const verifyCode = async(req,res,next) =>{
 
     //remove otp after successful verification
     user.verificationCode = undefined;
-
     user.verificationCodeExpires = undefined;
     user.verificationPurpose = undefined;
 
@@ -190,25 +186,20 @@ const verifyCode = async(req,res,next) =>{
       user: user.toJSON()
     });
   }
-catch (error) {
-
+  catch (error) {
     next(error);
-
   }
-
-    
-}
+};
 
 /**
  * POST /api/auth/resend-code
  * Generate and send a new OTP.
  */
-
 const resendCode = async(req,res,next)=>{
    try {
      const {email} = req.body;
 
-     const user = await User.findOne({ email }); // Fixed: object parameter
+     const user = await User.findOne({ email });
 
      if(!user){
         return res.status(404).json({
@@ -217,24 +208,22 @@ const resendCode = async(req,res,next)=>{
      }
 
      //generate new otp
-     const code = user.setVerificationCode(); // Fixed: generate code
-     await user.save(); // Fixed: save user with new code
+     const code = user.setVerificationCode();
+     await user.save();
 
-     await sendVerificationEmail(
-        user.email,
-        code
-      );
+     sendVerificationEmail(user.email, code).catch((err) =>
+       console.error(`Email delivery failed: ${err.message}`)
+     );
 
-      res.json({
-        message: 'A new verification code has been sent.',
-      });
-    }
-    catch (error) {
-
-    next(error);
-
-  }
-}
+     res.json({
+       message: 'A new verification code has been sent.',
+       devCode: code,
+     });
+   }
+   catch (error) {
+     next(error);
+   }
+};
 
 
 
