@@ -49,6 +49,46 @@ app.use(globalLimiter);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  if (req.accepts('html')) {
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>LeafScan API — Online</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+          .card { background: #1e293b; padding: 2.5rem; border-radius: 16px; border: 1px solid #334155; text-align: center; max-width: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+          h1 { color: #10b981; margin: 0 0 0.5rem; font-size: 1.8rem; }
+          p { color: #94a3b8; line-height: 1.6; margin-bottom: 1.5rem; }
+          .badge { display: inline-block; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; }
+          .btn { display: inline-block; background: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.2s; }
+          .btn:hover { background: #10b981; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="badge">● Backend Online</div>
+          <h1>LeafScan API Server 🌿</h1>
+          <p>This is the backend REST API server. To use the full web app with leaf detection and scanning, visit the live frontend:</p>
+          <a class="btn" href="https://realtime-leaf-detection-system.vercel.app">Go to LeafScan Web App →</a>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+
+  res.json({
+    name: 'LeafScan API',
+    status: 'online',
+    version: '1.0.0',
+    frontend: 'https://realtime-leaf-detection-system.vercel.app',
+    health: '/api/health',
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
