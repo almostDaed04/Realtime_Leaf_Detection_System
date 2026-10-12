@@ -30,7 +30,9 @@ const getUsers = async (req, res, next) => {
     ]);
 
     const statsByUserId = new Map(
-      predictionStats.map((stat) => [stat._id.toString(), stat])
+      predictionStats
+        .filter((stat) => stat._id)
+        .map((stat) => [stat._id.toString(), stat])
     );
     const usersWithPredictionStats = users.map((user) => {
       const predictionStat = statsByUserId.get(user._id.toString());
