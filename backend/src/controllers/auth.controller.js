@@ -82,7 +82,7 @@ const register = async (req, res, next) => {
       message: 'Account created. Verification code sent to your email.',
       email: user.email,
       requiresVerification: true,
-      devCode: code,
+      devCode: process.env.RESEND_API_KEY ? undefined : code,
     });
   } catch (error) {
     next(error);
@@ -130,7 +130,7 @@ const login = async (req, res, next) => {
       message: 'Verification code sent to your email.',
       email: user.email,
       requiresVerification: true,
-      devCode: code,
+      devCode: process.env.RESEND_API_KEY ? undefined : code,
     });
   } catch (error) {
     next(error);
@@ -217,7 +217,7 @@ const resendCode = async(req,res,next)=>{
 
      res.json({
        message: 'A new verification code has been sent.',
-       devCode: code,
+       devCode: process.env.RESEND_API_KEY ? undefined : code,
      });
    }
    catch (error) {
