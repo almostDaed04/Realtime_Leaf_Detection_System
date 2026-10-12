@@ -15,7 +15,13 @@ const requestPasswordReset = async (req, res, next) => {
       user.resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
       user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
       await user.save();
-      const appUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+      let appUrl = process.env.FRONTEND_URL;
+      if (!appUrl || appUrl === '*' || !appUrl.startsWith('http')) {
+        appUrl = process.env.NODE_ENV === 'production'
+          ? 'https://realtime-leaf-detection-system.vercel.app'
+          : 'http://localhost:5173';
+      }
+      appUrl = appUrl.replace(/\/$/, '');
       await sendPasswordResetEmail(user.email, `${appUrl}/reset-password?token=${token}`);
     }
     res.json({ message: 'If an account exists for that email, a password reset link has been sent.' });
