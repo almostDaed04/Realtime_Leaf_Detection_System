@@ -55,6 +55,12 @@ const Result = () => {
 
           {/* Details */}
           <div className="p-6 space-y-5">
+            {prediction.detectionFallback && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+                The leaf detector did not return a bounding box, so the full image was classified. This result may be less accurate.
+              </div>
+            )}
+
             {/* Confidence */}
             <div className="flex items-center justify-between">
               <span className="text-slate-400 font-medium">Confidence</span>

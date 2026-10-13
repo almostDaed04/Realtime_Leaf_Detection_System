@@ -87,14 +87,13 @@ const predict = async (req, res, next) => {
       };
     }
 
-    const { leaf_count, boxes } = detectResponse.data;
+    const { leaf_count } = detectResponse.data;
+    let { boxes } = detectResponse.data;
+    const detectionFallback = leaf_count === 0;
 
-    // Step 4: Reject if not exactly one leaf — F.5
-    if (leaf_count === 0) {
-      return res.status(422).json({
-        error: 'No leaf detected in the image. Please upload a clear image of a single leaf.',
-        leafCount: leaf_count,
-      });
+    if (detectionFallback) {
+      boxes = [[0, 0, metadata.width, metadata.height]];
+      console.warn('No leaf box returned; classifying the full image.');
     }
 
     if (leaf_count > 1) {
@@ -190,6 +189,7 @@ const predict = async (req, res, next) => {
         species: prediction.species,
         confidence: prediction.confidenceScore,
         timestamp: prediction.timestamp,
+        detectionFallback,
       },
     });
   } catch (error) {
