@@ -1,87 +1,50 @@
+
 """
-CNN-based leaf species classification service.
-Wraps a PyTorch model for species inference on cropped leaf images.
+YOLO-based leaf species classification service.
+Loads trained YOLO classification weights and predicts from image bytes.
 """
 
+import io
 import logging
 import os
 from pathlib import Path
 
-import torch
-import torch.nn as nn
-from torchvision import transforms, models
 from PIL import Image
-import io
+from ultralytics import YOLO
 
 logger = logging.getLogger(__name__)
 
-# Path to model weights
-MODELS_DIR = Path(__file__).parent.parent / "models"
-CLASSIFIER_WEIGHTS = os.getenv("CLASSIFIER_WEIGHTS", str(MODELS_DIR / "leaf_classifier.pth"))
-
-# Species labels (matches dataset folders)
-SPECIES_LABELS = ["Guava", "Lemon", "Lychee", "Mango", "Olive"]
-
-# Image preprocessing (matches training evaluation preprocessing)
-TRANSFORM = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225],
-    ),
-])
-
-
-def build_model(num_classes: int = 5) -> nn.Module:
-    """
-    Build a MobileNetV2-based classifier.
-    Transfer learning: freeze early layers, replace the final classifier head.
-    """
-    model = models.mobilenet_v2(weights=None)
-    model.classifier[1] = nn.Linear(model.last_channel, num_classes)
-    return model
+MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
+CLASSIFIER_WEIGHTS = os.getenv(
+    "CLASSIFIER_WEIGHTS",
+    str(MODELS_DIR / "best.pt"),
+)
 
 
 class LeafClassifier:
-    """CNN leaf species classifier wrapper."""
+    """YOLO leaf species classifier wrapper."""
 
     def __init__(self, weights_path: str = CLASSIFIER_WEIGHTS):
-        """
-        Initialize the classifier.
-        If trained weights exist, loads them. Otherwise runs in demo mode
-        with random weights (for development/testing only).
-        """
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.species_labels = list(SPECIES_LABELS)
-
-        if os.path.exists(weights_path):
-            logger.info(f"Loading classifier weights from: {weights_path}")
-            checkpoint = torch.load(weights_path, map_location=self.device, weights_only=True)
-            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                if "classes" in checkpoint and checkpoint["classes"]:
-                    self.species_labels = list(checkpoint["classes"])
-                self.model = build_model(num_classes=len(self.species_labels))
-                self.model.load_state_dict(checkpoint["model_state_dict"])
-            elif isinstance(checkpoint, dict):
-                self.model = build_model(num_classes=len(self.species_labels))
-                self.model.load_state_dict(checkpoint)
-            else:
-                self.model = checkpoint
-            self._demo_mode = False
-            logger.info(f"Classifier loaded with {len(self.species_labels)} classes: {self.species_labels}")
-        else:
-            logger.warning(
-                f"Classifier weights not found at {weights_path}. "
-                "Running in DEMO MODE with random weights. "
-                "Train the model and place the .pth file in ai-service/models/ for real predictions."
+        self.model_path = Path(weights_path)
+        if not self.model_path.is_file():
+            raise FileNotFoundError(
+                f"Trained classification model not found: {self.model_path}"
             )
-            self.model = build_model(num_classes=len(self.species_labels))
-            self._demo_mode = True
 
-        self.model.to(self.device)
-        self.model.eval()
+        logger.info("Loading YOLO classifier from %s", self.model_path)
+        self.model = YOLO(str(self.model_path))
+
+        # Use the class names embedded in the trained model.
+        names = self.model.names
+        if isinstance(names, dict):
+            self.species_labels = [
+                names[i] for i in sorted(names)
+            ]
+        else:
+            self.species_labels = list(names)
+
+        self._demo_mode = False
+        logger.info("Classifier loaded with classes: %s", self.species_labels)
 
     @property
     def is_demo_mode(self) -> bool:
@@ -92,46 +55,40 @@ class LeafClassifier:
         return self.species_labels
 
     def classify(self, image_bytes: bytes) -> dict:
-        """
-        Classify a cropped leaf image.
+        """Classify a single cropped leaf image from raw image bytes."""
+        try:
+            with Image.open(io.BytesIO(image_bytes)) as image:
+                image = image.convert("RGB")
 
-        Args:
-            image_bytes: Raw image bytes of a single cropped leaf.
+                results = self.model.predict(
+                    source=image,
+                    imgsz=224,
+                    verbose=False,
+                )
 
-        Returns:
-            dict with:
-                - species (str): Predicted species name
-                - confidence (float): Confidence score (0-100)
-        """
-        # Load and preprocess image
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        tensor = TRANSFORM(image).unsqueeze(0).to(self.device)
+            result = results[0]
 
-        # Run inference
-        with torch.no_grad():
-            outputs = self.model(tensor)
-            probabilities = torch.softmax(outputs, dim=1)[0]
+            if result.probs is None:
+                raise RuntimeError(
+                    "The loaded model is not a YOLO classification model."
+                )
 
-        # Print probabilities for every species
-        for label, probability in zip(
-            self.species_labels, probabilities.tolist()
-        ):
-            logger.info("%s: %.2f%%", label, probability * 100)
+            class_id = int(result.probs.top1)
+            confidence = float(result.probs.top1conf) * 100
 
-        # Get the predicted species
-        predicted_idx = probabilities.argmax().item()
-        species = self.species_labels[predicted_idx]
-        confidence_score = round(
-            probabilities[predicted_idx].item() * 100, 2
-        )
+            species = result.names[class_id]
 
-        if self._demo_mode:
-            logger.warning(
-                f"DEMO MODE prediction: {species} ({confidence_score}%) — "
-                "These results are NOT meaningful. Load trained weights for real predictions."
+            logger.info(
+                "Prediction: %s (%.2f%%)",
+                species,
+                confidence,
             )
 
-        return {
-            "species": species,
-            "confidence": confidence_score,
-        }
+            return {
+                "species": species,
+                "confidence": round(confidence, 2),
+            }
+
+        except Exception:
+            logger.exception("Leaf classification failed")
+            raise
