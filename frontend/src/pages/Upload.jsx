@@ -63,7 +63,7 @@ const Upload = () => {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                  <span><strong>Exact Resolution:</strong> The image must be exactly <strong>640 × 640 pixels</strong>. Images with other dimensions will be rejected.</span>
+                  <span>Images of any dimensions are resized to <strong>640 × 640 pixels</strong> before analysis.</span>
                 </li>
               </ul>
             </div>
@@ -104,7 +104,7 @@ const Upload = () => {
             <ul className="space-y-2 text-sm text-slate-400">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                Image dimensions must be exactly <strong>640 × 640 px</strong>
+                Images are resized to <strong>640 × 640 px</strong> before analysis
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>

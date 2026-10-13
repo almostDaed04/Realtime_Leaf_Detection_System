@@ -29,20 +29,11 @@ const ImageUploader = ({ onFileSelect, disabled }) => {
   const handleFile = (file) => {
     if (!validateFile(file)) return;
 
-    // Check image resolution (must be strictly 640x640)
+    // Confirm the browser can decode the image; the backend resizes it for analysis.
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-      if (img.naturalWidth !== 640 || img.naturalHeight !== 640) {
-        setError(
-          `Image must be exactly 640×640 pixels. Uploaded image is ${img.naturalWidth}×${img.naturalHeight}px.`
-        );
-        setPreview(null);
-        onFileSelect(null);
-        return;
-      }
-
       setError('');
       // Create preview
       const reader = new FileReader();
@@ -159,7 +150,7 @@ const ImageUploader = ({ onFileSelect, disabled }) => {
                 {dragActive ? 'Drop your image here' : 'Drag & drop a leaf image'}
               </p>
               <p className="text-sm text-slate-400 mt-1">
-                click to browse • <strong>640 × 640 px only</strong> • Max 5MB
+                click to browse • JPEG or PNG • Max 5MB
               </p>
             </div>
           </div>

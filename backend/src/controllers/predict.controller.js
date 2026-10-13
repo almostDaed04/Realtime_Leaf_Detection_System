@@ -16,22 +16,28 @@ const predict = async (req, res, next) => {
       return res.status(400).json({ error: 'No image file provided.' });
     }
 
-    const imageBuffer = req.file.buffer;
-    const imageMimeType = req.file.mimetype;
-
-    // Step 2: Strictly validate image resolution (must be exactly 640x640 px)
-    const metadata = await sharp(imageBuffer).metadata();
-    if (metadata.width !== 640 || metadata.height !== 640) {
-      return res.status(400).json({
-        error: `Image must be exactly 640x640 pixels. Uploaded image is ${metadata.width}x${metadata.height}px.`,
-      });
+    let imageBuffer;
+    try {
+      imageBuffer = await sharp(req.file.buffer)
+        .rotate()
+        .resize(640, 640, {
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 1 },
+        })
+        .jpeg({ quality: 95 })
+        .toBuffer();
+    } catch (error) {
+      console.error('Image decode error:', error.message);
+      return res.status(400).json({ error: 'Could not read the uploaded image.' });
     }
+    const imageMimeType = 'image/jpeg';
+    const metadata = await sharp(imageBuffer).metadata();
 
     // Step 3: Send to AI service /detect — F.4
     const FormData = (await import('form-data')).default;
     const detectForm = new FormData();
     detectForm.append('file', imageBuffer, {
-      filename: req.file.originalname,
+      filename: 'normalized_leaf.jpg',
       contentType: imageMimeType,
     });
 
