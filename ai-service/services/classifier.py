@@ -110,11 +110,20 @@ class LeafClassifier:
         # Run inference
         with torch.no_grad():
             outputs = self.model(tensor)
-            probabilities = torch.softmax(outputs, dim=1)
-            confidence, predicted_idx = torch.max(probabilities, dim=1)
+            probabilities = torch.softmax(outputs, dim=1)[0]
 
-        species = self.species_labels[predicted_idx.item()]
-        confidence_score = round(confidence.item() * 100, 2)
+        # Print probabilities for every species
+        for label, probability in zip(
+            self.species_labels, probabilities.tolist()
+        ):
+            logger.info("%s: %.2f%%", label, probability * 100)
+
+        # Get the predicted species
+        predicted_idx = probabilities.argmax().item()
+        species = self.species_labels[predicted_idx]
+        confidence_score = round(
+            probabilities[predicted_idx].item() * 100, 2
+        )
 
         if self._demo_mode:
             logger.warning(
