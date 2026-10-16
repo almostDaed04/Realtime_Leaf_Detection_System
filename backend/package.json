@@ -1,7 +1,7 @@
 {
   "name": "leaf-detection-backend",
   "version": "1.0.0",
-  "description": "Express.js backend for the Real-Time Leaf Detection System",
+  "description": "Express.js backend for the Leaf Identification System",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

@@ -1,4 +1,4 @@
-# Implementation Plan — Real Time Leaf Detection System
+# Implementation Plan — Leaf Identification System
 
 Based on the SRS, DFDs, Structure Chart, and Data Dictionary you shared. This plan turns those requirements into a concrete build: architecture, tech stack, schemas, APIs, ML pipeline, security, and a phased delivery schedule.
 

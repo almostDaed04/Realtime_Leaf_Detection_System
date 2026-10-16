@@ -1,5 +1,5 @@
 Write-Host "========================================================" -ForegroundColor Green
-Write-Host "Starting Real-Time Leaf Detection System (All Services)" -ForegroundColor Green
+Write-Host "Starting Leaf Identification System (All Services)" -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path

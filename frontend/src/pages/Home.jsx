@@ -53,10 +53,10 @@ const Home = () => {
             </span>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mt-4">
               <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-amber-400 bg-clip-text text-transparent">
-                Identify Leaves
+                Leaf Identification
               </span>
               <br />
-              <span className="text-slate-200">in Seconds</span>
+              <span className="text-slate-200">System</span>
             </h1>
             <p className="mt-4 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
               Upload a leaf image and our AI instantly detects and classifies it among
@@ -211,7 +211,7 @@ const Home = () => {
       {/* Footer */}
       <footer className="border-t border-slate-800 py-8 px-4">
         <div className="max-w-6xl mx-auto text-center text-sm text-slate-500">
-          <p className="text-slate-400 font-medium">🍃 LeafScan — Real-Time Leaf Detection & Classification System</p>
+          <p className="text-slate-400 font-medium">🍃 LeafScan — Leaf Identification System</p>
           <p className="mt-2 text-xs">Copyright &copy; {new Date().getFullYear()} LeafScan. All rights reserved.</p>
         </div>
       </footer>

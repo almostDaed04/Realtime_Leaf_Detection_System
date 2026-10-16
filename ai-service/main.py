@@ -1,5 +1,5 @@
 """
-FastAPI AI Service for Real-Time Leaf Detection System.
+FastAPI AI Service for Leaf Identification System.
 Exposes /detect, /classify, and /health endpoints.
 Models are loaded into memory at startup for low-latency inference.
 """
@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Leaf Detection AI Service",
+    title="Leaf Identification AI Service",
     description="Stateless inference microservice for leaf detection (YOLOv8) and species classification (CNN).",
     version="1.0.0",
     lifespan=lifespan,
@@ -66,7 +66,7 @@ app.include_router(classify_router, tags=["Classification"])
 async def root():
     """Root endpoint for status check."""
     return {
-        "service": "Leaf Detection AI Service",
+        "service": "Leaf Identification AI Service",
         "status": "online",
         "docs": "/docs",
         "health": "/health",

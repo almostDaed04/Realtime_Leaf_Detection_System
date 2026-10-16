@@ -1,7 +1,7 @@
 @echo off
-title Real-Time Leaf Detection System Runner
+title Leaf Identification System Runner
 echo ========================================================
-echo Starting Real-Time Leaf Detection System (All Services)
+echo Starting Leaf Identification System (All Services)
 echo ========================================================
 echo.
 

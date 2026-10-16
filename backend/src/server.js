@@ -71,8 +71,8 @@ app.get('/', (req, res) => {
       <body>
         <div class="card">
           <div class="badge">● Backend Online</div>
-          <h1>LeafScan API Server 🌿</h1>
-          <p>This is the backend REST API server. To use the full web app with leaf detection and scanning, visit the live frontend:</p>
+          <h1>Leaf Identification System API Server 🌿</h1>
+          <p>This is the backend REST API server. To use the full web app with leaf identification and scanning, visit the live frontend:</p>
           <a class="btn" href="https://realtime-leaf-detection-system.vercel.app">Go to LeafScan Web App →</a>
         </div>
       </body>
@@ -81,7 +81,7 @@ app.get('/', (req, res) => {
   }
 
   res.json({
-    name: 'LeafScan API',
+    name: 'Leaf Identification System API',
     status: 'online',
     version: '1.0.0',
     frontend: 'https://realtime-leaf-detection-system.vercel.app',
