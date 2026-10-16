@@ -41,10 +41,22 @@ const VerifyCode = () => {
       <div className="relative w-full max-w-md animate-slide-up">
         <div className="glass-card p-8 sm:p-10">
           <div className="text-center mb-8">
-            <span className="text-4xl">📧</span>
-            <h1 className="text-2xl font-bold text-slate-200 mt-3">Verify Your Email</h1>
-            <p className="text-slate-400 mt-1">Enter the 6-digit code sent to {email}</p>
+            <span className="text-4xl">{location.state?.reactivated ? '🌿' : '📧'}</span>
+            <h1 className="text-2xl font-bold text-slate-200 mt-3">
+              {location.state?.reactivated ? 'Welcome Back!' : 'Verify Your Email'}
+            </h1>
+            <p className="text-slate-400 mt-1">
+              {location.state?.reactivated
+                ? `Your account is reactivated. Enter the 6-digit code sent to ${email} to complete sign-in.`
+                : `Enter the 6-digit code sent to ${email}`}
+            </p>
           </div>
+
+          {location.state?.reactivated && (
+            <div className="p-3 mb-6 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs text-center animate-fade-in font-medium">
+              ✨ Account reactivated! Verification code is ready in your inbox.
+            </div>
+          )}
 
           {error && <div className="alert alert-error mb-6 animate-fade-in">⚠️ {error}</div>}
 

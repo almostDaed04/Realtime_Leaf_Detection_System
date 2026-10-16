@@ -5,6 +5,8 @@ const {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendSignInNotification,
+  sendDeactivationEmail,
+  sendReactivationEmail,
 } = require('../utils/mailer');
 
 const requestPasswordReset = async (req, res, next) => {
@@ -120,6 +122,33 @@ const login = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    let reactivated = false;
+    if (user.accountStatus === 'deactivated') {
+      const isExpired = user.deactivatedUntil && user.deactivatedUntil.getTime() <= Date.now();
+
+      if (isExpired || req.body.reactivate === true) {
+        // Automatically reactivate or user chose early reactivation
+        user.accountStatus = 'active';
+        user.deactivatedAt = undefined;
+        user.deactivatedUntil = undefined;
+        user.deactivationReason = undefined;
+        reactivated = true;
+        sendReactivationEmail(user.email).catch((err) =>
+          console.error(`Reactivation email failed: ${err.message}`)
+        );
+      } else {
+        // Still within deactivation window; notify client so user can choose to reactivate
+        return res.status(200).json({
+          isDeactivated: true,
+          email: user.email,
+          deactivatedAt: user.deactivatedAt,
+          deactivatedUntil: user.deactivatedUntil,
+          deactivationReason: user.deactivationReason,
+          message: `Your account is temporarily deactivated until ${user.deactivatedUntil ? new Date(user.deactivatedUntil).toLocaleString() : 'scheduled reactivation'}. Would you like to reactivate it now?`,
+        });
+      }
+    }
+
     // Generate a new otp for login
     const code = user.setVerificationCode();
     user.verificationPurpose = 'login';
@@ -132,9 +161,12 @@ const login = async (req, res, next) => {
     );
 
     res.json({
-      message: 'Verification code sent to your email.',
+      message: reactivated
+        ? 'Welcome back! Your account has been reactivated. Verification code sent to your email.'
+        : 'Verification code sent to your email.',
       email: user.email,
       requiresVerification: true,
+      reactivated,
     });
   } catch (error) {
     next(error);
@@ -234,6 +266,157 @@ const resendCode = async(req,res,next)=>{
 
 
 /**
+ * POST /api/auth/deactivate
+ * Temporarily deactivate the user's own account.
+ * Requires authentication and password confirmation.
+ */
+const deactivateAccount = async (req, res, next) => {
+  try {
+    const { password, duration, customDays, customDate, reason } = req.body;
+
+    // Fetch user with password
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Verify current password for safety
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Incorrect password. Please enter your valid password to confirm deactivation.' });
+    }
+
+    // Calculate deactivatedUntil timestamp
+    let deactivatedUntil;
+    const now = Date.now();
+
+    switch (duration) {
+      case 'indefinite':
+        deactivatedUntil = undefined;
+        break;
+      case '1_day':
+        deactivatedUntil = new Date(now + 1 * 24 * 60 * 60 * 1000);
+        break;
+      case '3_days':
+        deactivatedUntil = new Date(now + 3 * 24 * 60 * 60 * 1000);
+        break;
+      case '7_days':
+        deactivatedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '14_days':
+        deactivatedUntil = new Date(now + 14 * 24 * 60 * 60 * 1000);
+        break;
+      case '30_days':
+        deactivatedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000);
+        break;
+      case 'custom':
+        if (customDays) {
+          const daysNum = parseInt(customDays, 10);
+          if (isNaN(daysNum) || daysNum < 1 || daysNum > 365) {
+            return res.status(400).json({ error: 'Custom days must be between 1 and 365 days.' });
+          }
+          deactivatedUntil = new Date(now + daysNum * 24 * 60 * 60 * 1000);
+        } else if (customDate) {
+          const parsed = new Date(customDate);
+          if (isNaN(parsed.getTime()) || parsed.getTime() <= now) {
+            return res.status(400).json({ error: 'Custom date must be a valid future date.' });
+          }
+          if (parsed.getTime() > now + 365 * 24 * 60 * 60 * 1000) {
+            return res.status(400).json({ error: 'Deactivation period cannot exceed 1 year.' });
+          }
+          deactivatedUntil = parsed;
+        } else {
+          return res.status(400).json({ error: 'Please specify custom days or a future date.' });
+        }
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid duration specified.' });
+    }
+
+    const deactivatedAt = new Date();
+    user.accountStatus = 'deactivated';
+    user.deactivatedAt = deactivatedAt;
+    user.deactivatedUntil = deactivatedUntil;
+    user.deactivationReason = reason ? reason.trim().slice(0, 200) : 'User requested pause';
+
+    await user.save();
+
+    // Send email notification asynchronously
+    sendDeactivationEmail(user.email, {
+      deactivatedUntil,
+      reason: user.deactivationReason,
+    }).catch((err) => console.error(`Deactivation email failed: ${err.message}`));
+
+    const untilText = deactivatedUntil
+      ? `until ${deactivatedUntil.toLocaleString()}`
+      : 'until you choose to reactivate';
+
+    res.json({
+      message: `Your account has been deactivated ${untilText}. You can reactivate anytime by signing in.`,
+      deactivatedUntil,
+      deactivatedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/auth/reactivate
+ * Explicitly reactivate a deactivated account using email and password.
+ */
+const reactivateAccount = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (user.accountStatus === 'disabled') {
+      return res.status(403).json({ error: 'Account has been disabled. Contact an administrator.' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    if (user.accountStatus === 'active') {
+      return res.status(400).json({ error: 'Account is already active.' });
+    }
+
+    // Reactivate account
+    user.accountStatus = 'active';
+    user.deactivatedAt = undefined;
+    user.deactivatedUntil = undefined;
+    user.deactivationReason = undefined;
+
+    const code = user.setVerificationCode();
+    user.verificationPurpose = 'login';
+    await user.save();
+
+    // Send emails asynchronously
+    sendReactivationEmail(user.email).catch((err) =>
+      console.error(`Reactivation email failed: ${err.message}`)
+    );
+    sendVerificationEmail(user.email, code).catch((err) =>
+      console.error(`Verification email failed: ${err.message}`)
+    );
+
+    res.json({
+      message: 'Account reactivated successfully. Verification code sent to your email.',
+      email: user.email,
+      requiresVerification: true,
+      reactivated: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * GET /api/auth/me
  * Get current user profile. Requires authentication.
  */
@@ -242,17 +425,13 @@ const getMe = async (req, res) => {
 };
 
 module.exports = {
-
   register,
-
   login,
-
   verifyCode,
-
   resendCode,
   requestPasswordReset,
   resetPassword,
-
+  deactivateAccount,
+  reactivateAccount,
   getMe,
-
 };

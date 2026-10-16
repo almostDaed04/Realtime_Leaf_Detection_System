@@ -35,8 +35,25 @@ const userSchema = new mongoose.Schema({
 
   accountStatus: {
     type: String,
-    enum: ['active', 'disabled'],
+    enum: ['active', 'disabled', 'deactivated'],
     default: 'active',
+  },
+
+  // Temporary Account Deactivation
+  deactivatedAt: {
+    type: Date,
+    default: undefined,
+  },
+
+  deactivatedUntil: {
+    type: Date,
+    default: undefined,
+  },
+
+  deactivationReason: {
+    type: String,
+    maxlength: [200, 'Deactivation reason cannot exceed 200 characters'],
+    default: undefined,
   },
 
   // Email verification OTP

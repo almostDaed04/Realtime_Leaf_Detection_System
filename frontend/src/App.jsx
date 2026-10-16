@@ -11,6 +11,7 @@ import History from './pages/History';
 import AdminDashboard from './pages/AdminDashboard';
 import VerifyCode from './pages/VerifyCode';
 import PasswordRecovery from './pages/PasswordRecovery';
+import Settings from './pages/Settings';
 import './index.css';
 
 function App() {
@@ -51,7 +52,14 @@ function App() {
                   <History />
                 </ProtectedRoute>
               }
-              
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
             />
             <Route path="/verify" element={<VerifyCode />} />
 

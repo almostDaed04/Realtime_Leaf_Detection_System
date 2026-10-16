@@ -33,6 +33,13 @@ api.interceptors.response.use(
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
+    } else if (error.response?.status === 403 && error.response?.data?.isDeactivated) {
+      // Account is temporarily deactivated — clear auth state and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login?deactivated=true';
+      }
     }
     return Promise.reject(error);
   }

@@ -49,6 +49,7 @@ const Navbar = () => {
               <>
                 <Link to="/upload" className={navLinkClass('/upload')}>Upload</Link>
                 <Link to="/history" className={navLinkClass('/history')}>History</Link>
+                <Link to="/settings" className={navLinkClass('/settings')}>Settings</Link>
               </>
             )}
 
@@ -72,9 +73,9 @@ const Navbar = () => {
             </button>
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-slate-400">
+                <Link to="/settings" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
                   Hi, <span className="text-emerald-400 font-medium">{user?.username}</span>
-                </span>
+                </Link>
                 <button onClick={handleLogout} className="btn btn-secondary text-sm py-1.5 px-4">
                   Logout
                 </button>
@@ -117,6 +118,7 @@ const Navbar = () => {
               <>
                 <Link to="/upload" onClick={() => setMobileMenuOpen(false)} className={`block ${navLinkClass('/upload')}`}>Upload</Link>
                 <Link to="/history" onClick={() => setMobileMenuOpen(false)} className={`block ${navLinkClass('/history')}`}>History</Link>
+                <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className={`block ${navLinkClass('/settings')}`}>⚙️ Settings</Link>
               </>
             )}
 

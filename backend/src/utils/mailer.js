@@ -151,8 +151,82 @@ const sendSignInNotification = async (toEmail) => {
   }
 };
 
+const sendDeactivationEmail = async (toEmail, { deactivatedUntil, reason }) => {
+  try {
+    const formattedUntil = deactivatedUntil
+      ? `until ${new Date(deactivatedUntil).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}`
+      : 'until you decide to reactivate';
+
+    await sendEmail({
+      to: toEmail,
+      subject: 'Your LeafScan account has been temporarily deactivated',
+      text: `Your LeafScan account has been temporarily deactivated ${formattedUntil}. Reason: ${reason || 'Not specified'}. You can reactivate your account at any time by signing in.`,
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fefce8; padding: 36px 24px; border-radius: 12px; border: 1px solid #fef08a;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #b45309; font-size: 26px; margin: 0;">LeafScan 🍂</h2>
+          </div>
+          <div style="background-color: #ffffff; padding: 32px 28px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h3 style="color: #1f2937; margin-top: 0;">Account Temporarily Deactivated</h3>
+            <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+              As requested, your LeafScan account has been placed on a temporary pause.
+            </p>
+            <div style="background-color: #fffbeb; border: 1px solid #fcd34d; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 4px 0; color: #92400e; font-size: 14px;">
+                <strong>Reactivation Date:</strong> ${formattedUntil}
+              </p>
+              ${reason ? `<p style="margin: 4px 0; color: #92400e; font-size: 14px;"><strong>Reason:</strong> ${reason}</p>` : ''}
+            </div>
+            <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+              🔒 <strong>Your data is safe:</strong> All your previous scans, leaf predictions, and account settings remain preserved.
+            </p>
+            <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+              🔄 <strong>Want to come back early?</strong> You can reactivate your account at any time simply by visiting LeafScan and signing in with your email and password.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 24px; color: #9ca3af; font-size: 12px;">
+            <p>&copy; ${new Date().getFullYear()} LeafScan. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error('[MAILER ERROR] Deactivation email failed:', error.message);
+  }
+};
+
+const sendReactivationEmail = async (toEmail) => {
+  try {
+    await sendEmail({
+      to: toEmail,
+      subject: 'Welcome back! Your LeafScan account has been reactivated',
+      text: 'Your LeafScan account is now active again. You can continue scanning leaves and viewing your plant health history.',
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f0fdf4; padding: 36px 24px; border-radius: 12px; border: 1px solid #bbf7d0;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #059669; font-size: 26px; margin: 0;">LeafScan 🌿</h2>
+          </div>
+          <div style="background-color: #ffffff; padding: 32px 28px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+            <h3 style="color: #065f46; margin-top: 0;">Welcome Back!</h3>
+            <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+              Your account has been successfully reactivated. Your scan history and features are ready for you.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 24px; color: #9ca3af; font-size: 12px;">
+            <p>&copy; ${new Date().getFullYear()} LeafScan. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error('[MAILER ERROR] Reactivation email failed:', error.message);
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendSignInNotification,
+  sendDeactivationEmail,
+  sendReactivationEmail,
 };

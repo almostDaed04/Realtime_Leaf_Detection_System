@@ -28,6 +28,25 @@ const requireAuth = async (req, res, next) => {
       return res.status(403).json({ error: 'Account has been disabled.' });
     }
 
+    if (user.accountStatus === 'deactivated') {
+      // If deactivation period expired, automatically reactivate
+      if (user.deactivatedUntil && user.deactivatedUntil.getTime() <= Date.now()) {
+        user.accountStatus = 'active';
+        user.deactivatedAt = undefined;
+        user.deactivatedUntil = undefined;
+        user.deactivationReason = undefined;
+        await user.save();
+      } else {
+        return res.status(403).json({
+          error: 'Your account is temporarily deactivated.',
+          isDeactivated: true,
+          deactivatedUntil: user.deactivatedUntil,
+          deactivatedAt: user.deactivatedAt,
+          deactivationReason: user.deactivationReason,
+        });
+      }
+    }
+
     req.user = user;
     next();
   } catch (error) {

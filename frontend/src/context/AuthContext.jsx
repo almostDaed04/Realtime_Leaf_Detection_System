@@ -71,7 +71,8 @@ No JWT is stored yet.
 */
 const login = async (
 email,
-password
+password,
+reactivate = false
 ) => {
 const response =
   await api.post(
@@ -79,11 +80,12 @@ const response =
     {
       email,
       password,
+      reactivate,
     }
   );
 
 // Response contains:
-// { message, email, requiresVerification }
+// { message, email, requiresVerification } OR { isDeactivated, ... }
 
 return response.data;
 
@@ -203,7 +205,35 @@ localStorage.removeItem(
 localStorage.removeItem(
   'user'
 );
+};
 
+/**
+ * DEACTIVATE ACCOUNT
+ * Temporarily pause account and immediately clear local session
+ */
+const deactivateAccount = async ({ duration, customDays, customDate, reason, password }) => {
+  const response = await api.post('/auth/deactivate', {
+    duration,
+    customDays,
+    customDate,
+    reason,
+    password,
+  });
+
+  logout();
+  return response.data;
+};
+
+/**
+ * REACTIVATE ACCOUNT
+ * Explicitly request early account reactivation
+ */
+const reactivateAccount = async (email, password) => {
+  const response = await api.post('/auth/reactivate', {
+    email,
+    password,
+  });
+  return response.data;
 };
 
 const value = {
@@ -230,6 +260,10 @@ verifyCode,
 resendCode,
 
 logout,
+
+deactivateAccount,
+
+reactivateAccount,
 
 };
 

@@ -27,6 +27,31 @@ const loginSchema = z.object({
     .toLowerCase(),
   password: z.string()
     .min(1, 'Password is required'),
+  reactivate: z.boolean().optional(),
+});
+
+const deactivateSchema = z.object({
+  password: z.string().min(1, 'Current password is required to deactivate your account'),
+  duration: z.enum(['indefinite', '1_day', '3_days', '7_days', '14_days', '30_days', 'custom']),
+  customDays: z.coerce.number().int().min(1).max(365).optional(),
+  customDate: z.string().optional(),
+  reason: z.string().max(200, 'Reason cannot exceed 200 characters').optional(),
+}).refine(
+  (data) => {
+    if (data.duration === 'custom') {
+      return Boolean(data.customDays || data.customDate);
+    }
+    return true;
+  },
+  {
+    message: 'Please provide either custom days (1-365) or a valid future date for custom duration',
+    path: ['customDays'],
+  }
+);
+
+const reactivateSchema = z.object({
+  email: z.string().email('Please provide a valid email').trim().toLowerCase(),
+  password: z.string().min(1, 'Password is required'),
 });
 
 const forgotPasswordSchema = z.object({
@@ -76,6 +101,8 @@ const validate = (schema, source = 'body') => {
 module.exports = {
   registerSchema,
   loginSchema,
+  deactivateSchema,
+  reactivateSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   paginationSchema,

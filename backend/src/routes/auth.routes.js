@@ -9,6 +9,8 @@ const {
   getMe,
   requestPasswordReset,
   resetPassword,
+  deactivateAccount,
+  reactivateAccount,
 } = require('../controllers/auth.controller');
 
 const { requireAuth } = require('../middleware/auth');
@@ -17,6 +19,8 @@ const {
   validate,
   registerSchema,
   loginSchema,
+  deactivateSchema,
+  reactivateSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } = require('../middleware/validate');
@@ -89,5 +93,19 @@ router.get(
   getMe
 );
 
+// Temporarily deactivate account
+router.post(
+  '/deactivate',
+  requireAuth,
+  validate(deactivateSchema),
+  deactivateAccount
+);
+
+// Reactivate account
+router.post(
+  '/reactivate',
+  validate(reactivateSchema),
+  reactivateAccount
+);
 
 module.exports = router;
